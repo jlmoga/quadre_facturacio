@@ -1,0 +1,13 @@
+# Excel files
+*.xlsx
+*.xls
+imputacions/
+absències/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# IDE files
+.vscode/
+.idea/
