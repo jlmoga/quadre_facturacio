@@ -23,6 +23,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnUpdateDataAbs: "Carregar Absències",
             filtersTitleAbs: "Filtres d'Absències",
             colAbsenceH: "MANQUEN (h)",
+            lastUpdatedImp: "Imputacions",
+            lastUpdatedAbs: "Absències",
             lblNoClient: "Sense Client",
             lblNoRecentData: "No hi ha dades recents (30 dies)",
             lblNoConflicts: "No s'han detectat conflictes recents",
@@ -108,6 +110,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnUpdateDataAbs: "Cargar Ausencias",
             filtersTitleAbs: "Filtros de Ausencias",
             colAbsenceH: "FALTAN (h)",
+            lastUpdatedImp: "Imputaciones",
+            lastUpdatedAbs: "Ausencias",
             lblNoClient: "Sin Cliente",
             lblNoRecentData: "No hay datos recientes (30 días)",
             lblNoConflicts: "No se han detectado conflictos recientes",
@@ -248,14 +252,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        btnBackHome.addEventListener('click', () => {
+        btnBackHome.addEventListener('click', async () => {
             imputacionsScreen.classList.add('hidden');
             absenciesScreen.classList.add('hidden');
             homeScreen.classList.remove('hidden');
             btnBackHome.classList.add('hidden');
             headerTitle.setAttribute('data-i18n', 'homeTitle');
             applyTranslations();
-            updateHomeDashboard();
+            await updateHomeDashboard();
         });
     }
 
@@ -285,10 +289,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    langSelect.addEventListener('change', (e) => {
+    langSelect.addEventListener('change', async (e) => {
         currentLang = e.target.value;
         applyTranslations();
-        updateHomeDashboard();
+        await updateHomeDashboard();
         
         if (currentData.length > 0) {
             renderTable(filteredData);
@@ -577,8 +581,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         await saveToDB('imputacions_data', currentData);
         await saveToDB('total_files', excelFiles.length); // Mantinc record de fitxers d'imputacions
+        await saveToDB('imputacions_updated', new Date().getTime());
         
         applyFilters(); 
+        await updateHomeDashboard();
         uploadImputacions.classList.add('hidden');
         resultsSection.classList.remove('hidden');
     }
@@ -599,8 +605,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         await saveToDB('absencies_data', absData);
+        await saveToDB('absencies_updated', new Date().getTime());
         
         applyAbsFilters();
+        await updateHomeDashboard();
         uploadAbsencies.classList.add('hidden');
         absResultsSection.classList.remove('hidden');
     }
@@ -834,7 +842,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    function updateHomeDashboard() {
+    async function updateHomeDashboard() {
         const homeDashboard = document.getElementById('home-dashboard');
         const homeEmptyState = document.getElementById('home-empty-state');
         const hasData = currentData.length > 0 || absData.length > 0;
@@ -910,6 +918,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (document.getElementById('home-prev-amount')) document.getElementById('home-prev-amount').textContent = pmAmount.toLocaleString('de-DE', { minimumFractionDigits: 2 }) + ' €';
         if (document.getElementById('home-prev-abs-hours')) document.getElementById('home-prev-abs-hours').textContent = pmAbsHours.toFixed(1);
         if (document.getElementById('home-prev-conflicts')) document.getElementById('home-prev-conflicts').textContent = pmConflicts;
+
+        // --- Timestamps ---
+        const formatTS = (ts) => {
+            if (!ts) return '-';
+            return new Date(ts).toLocaleString(currentLang === 'ca' ? 'ca-ES' : 'es-ES', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit'
+            });
+        };
+        
+        const tsImp = await getFromDB('imputacions_updated');
+        const tsAbs = await getFromDB('absencies_updated');
+        if (document.getElementById('last-updated-imp')) document.getElementById('last-updated-imp').textContent = formatTS(tsImp);
+        if (document.getElementById('last-updated-abs')) document.getElementById('last-updated-abs').textContent = formatTS(tsAbs);
 
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(now.getDate() - 30);
@@ -1454,7 +1476,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('upload-imputacions').classList.add('hidden');
             resultsSection.classList.remove('hidden');
         }
-        updateHomeDashboard();
+        await updateHomeDashboard();
     } catch (err) {
         console.warn('No saved data or db error:', err);
     }

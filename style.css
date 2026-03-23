@@ -248,7 +248,7 @@ input[type="file"] {
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--border-color);
     border-radius: 16px;
-    padding: 1.5rem;
+    padding: 1.2rem 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -880,7 +880,7 @@ tbody tr:hover {
     justify-content: flex-start; /* Changed from center to allow dashboard growth */
     gap: 2rem;
     text-align: center;
-    padding: 2rem;
+    padding: 1rem 2rem;
     animation: fadeIn 0.5s ease-out;
     overflow-y: auto;
 }
@@ -1000,3 +1000,27 @@ tbody tr:hover {
     overflow: hidden;
     width: 100%;
 }
+
+.dashboard-info {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    padding: 0.8rem 1.2rem;
+    background: rgba(45, 52, 54, 0.4);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.dashboard-info .info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dashboard-info .info-item i {
+    color: var(--accent-color);
+    font-size: 1rem;
+}
+
