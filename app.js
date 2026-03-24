@@ -86,7 +86,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             titleOvertime: "Excés de Jornada (Conflictes)",
             colOverImputation: "IMPUTACIÓ (h)",
             colOverAbsence: "ABSÈNCIA (h)",
-            colOverTotal: "CÒMPUT DEL DIA (h)"
+            colOverTotal: "CÒMPUT DEL DIA (h)",
+            loadingData: "Recuperant dades guardades..."
         },
         es: {
             appTitle: "Cuadro de Imputaciones",
@@ -173,7 +174,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             titleOvertime: "Exceso de Jornada (Conflictos)",
             colOverImputation: "IMPUTACIÓN (h)",
             colOverAbsence: "AUSENCIA (h)",
-            colOverTotal: "CÓMPUTO DEL DÍA (h)"
+            colOverTotal: "CÓMPUTO DEL DÍA (h)",
+            loadingData: "Recuperando datos guardados..."
         }
 
     };
@@ -317,7 +319,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             };
             request.onsuccess = (e) => resolve(e.target.result);
-            request.onerror = (e) => reject(e.target.error);
+            request.onerror = (e) => {
+                console.error("Error literal de IndexedDB:", e.target.error);
+                alert("Error de base de dades: " + e.target.error.message + ". Comprova si el teu navegador té bloquejat l'emmagatzematge local.");
+                reject(e.target.error);
+            };
         });
     }
 
@@ -741,7 +747,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const countsType = {};
         data.forEach(r => countsType[r.type] = (countsType[r.type] || 0) + 1);
         const labelsType = Object.keys(countsType);
+        const valuesType = Object.values(countsType);
+
+        const ctxTypeCanvas = document.getElementById('absTypeChart');
+        if (ctxTypeCanvas) {
+            const ctxType = ctxTypeCanvas.getContext('2d');
+            if (absTypeChart) absTypeChart.destroy();
             absTypeChart = createAbsBarChart(ctxType, labelsType, valuesType, total, 'Tipus d\'Absència');
+        }
     }
 
     function getConflicts(data, absData, userFilter = [], start = null, end = null) {
@@ -1455,6 +1468,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Al carregar l'app, mirem si hi ha dades a la memòria cau per no tornar a demanar
     try {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) loadingOverlay.classList.remove('hidden-modal');
+
         const savedData = await getFromDB('imputacions_data');
         const savedAbsData = await getFromDB('absencies_data');
         
@@ -1468,8 +1484,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (savedData && savedData.length > 0) {
             currentData = savedData;
             const savedFiles = await getFromDB('total_files') || 1;
-            totalFilesEl.textContent = savedFiles;
-            totalFilesEl.dataset.value = savedFiles;
+            if (totalFilesEl) {
+                totalFilesEl.textContent = savedFiles;
+                totalFilesEl.dataset.value = savedFiles;
+            }
             
             applyFilters();
             
@@ -1477,7 +1495,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             resultsSection.classList.remove('hidden');
         }
         await updateHomeDashboard();
+        
+        // Amagar l'overlay després d'un segon per donar feedback visual
+        setTimeout(() => {
+            if (loadingOverlay) loadingOverlay.classList.add('hidden-modal');
+        }, 800);
+
     } catch (err) {
         console.warn('No saved data or db error:', err);
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) loadingOverlay.classList.add('hidden-modal');
     }
 });

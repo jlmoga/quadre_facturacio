@@ -1,0 +1,16 @@
+{
+  "name": "quadre-facturacio-izertis",
+  "version": "1.0.0",
+  "description": "Aplicació per a la gestió d'imputacions i absències",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server ./ -o",
+    "dev": "npx http-server ./"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
