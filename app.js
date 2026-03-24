@@ -196,7 +196,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     };
 
-    let currentLang = 'ca';
+    let currentLang = localStorage.getItem('moga_lang');
+    if (!currentLang) {
+        const browserLang = navigator.language || navigator.userLanguage;
+        currentLang = (browserLang && browserLang.startsWith('es')) ? 'es' : 'ca';
+    }
     const t = (key) => translations[currentLang][key] || key;
 
     function applyTranslations() {
@@ -214,6 +218,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnCloseSettings = document.getElementById('btn-close-settings');
     const btnCloseSettings2 = document.getElementById('btn-close-settings-2');
     const langSelect = document.getElementById('lang-select');
+    if (langSelect) langSelect.value = currentLang;
     const themeSelect = document.getElementById('theme-select');
 
     // Inicialitzar Tema carregant des de LocalStorage
@@ -309,6 +314,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     langSelect.addEventListener('change', async (e) => {
         currentLang = e.target.value;
+        localStorage.setItem('moga_lang', currentLang);
         applyTranslations();
         await updateHomeDashboard();
         
