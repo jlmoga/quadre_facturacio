@@ -1148,6 +1148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         sortData();
         renderTable(filteredData);
         updateChart(filteredData);
+        renderOvertimeTable();
     }
 
     function updateChart(data) {
@@ -1495,6 +1496,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             resultsSection.classList.remove('hidden');
         }
         await updateHomeDashboard();
+        renderOvertimeTable();
         
         // Amagar l'overlay després d'un segon per donar feedback visual
         setTimeout(() => {
