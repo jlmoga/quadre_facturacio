@@ -89,7 +89,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             colOverImputation: "IMPUTACIÓ (h)",
             colOverAbsence: "ABSÈNCIA (h)",
             colOverTotal: "CÒMPUT DEL DIA (h)",
-            loadingData: "Recuperant dades guardades..."
+            loadingData: "Recuperant dades guardades...",
+            months: ["Gener", "Febrer", "Març", "Abril", "Maig", "Juny", "Juliol", "Agost", "Setembre", "Octubre", "Novembre", "Desembre"],
+            lblImputacions: "imputacions",
+            lblAbsencies: "absències",
+            lblOvertimeWarning: "Aquest tècnic té una absència registrada aquest dia",
+            optCatalan: "Català",
+            optSpanish: "Castellà"
         },
         es: {
             appTitle: "Cuadro de Imputaciones",
@@ -104,7 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             statConflicts: "Conflictos Jornada",
             titleGlobalSummary: "Situación desde el inicio",
             titleMonthlySituation: "Situación a mes de",
-            titleClientSummary: "Resumen por Cliente (últimos 30 días)",
+            titleClientSummary: "Resumen por Cliente (últims 30 dies)",
             titleRecentAlerts: "Últimos Conflictos Detectados (30 días)",
             colAbsHours: "HORAS",
             homeEmptyState: "Actualice los datos de imputaciones y ausencias para poder mostrar información del estado",
@@ -132,7 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             chartAbsStatusTitle: "Estado de las ausencias",
             chartAbsTypeTitle: "Tipo de ausencias",
             statFiles: "Total Archivos Procesados",
-            statRows: "Total Imputaciones",
+            statRows: "Total Imputacions",
             statAmount: "Importe Facturable Estimado",
             colDate: "FECHA",
             colUser: "TÉCNICO",
@@ -165,7 +171,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             chartLabelFacturat: "Importe Facturado (€)",
             chartHoursUnit: "h",
             settingsTitle: "Configuración",
-            settingsLang: "Configuración:",
+            settingsLang: "Idioma:",
             themeLabel: "Tema:",
             themeDefault: "Por defecto",
             themeLight: "Claro",
@@ -179,7 +185,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             colOverImputation: "IMPUTACIÓN (h)",
             colOverAbsence: "AUSENCIA (h)",
             colOverTotal: "CÓMPUTO DEL DÍA (h)",
-            loadingData: "Recuperando datos guardados..."
+            loadingData: "Recuperando datos guardados...",
+            months: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+            lblImputacions: "imputaciones",
+            lblAbsencies: "ausencias",
+            lblOvertimeWarning: "Este técnico tiene una ausencia registrada este día",
+            optCatalan: "Catalán",
+            optSpanish: "Castellano"
         }
 
     };
@@ -375,8 +387,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ---- LÒGICA DE FUNCIONAMENT DE L'APP ----
-    const uploadBox = document.getElementById('upload-box');
-    const folderInput = document.getElementById('folderInput');
     const resultsSection = document.getElementById('results-section');
     const tableBody = document.getElementById('tableBody');
     const totalFilesEl = document.getElementById('total-files');
@@ -910,9 +920,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const currMonth = now.getMonth();
         const currYear = now.getFullYear();
         
-        const monthNames = ["Gener", "Febrer", "Març", "Abril", "Maig", "Juny", "Juliol", "Agost", "Setembre", "Octubre", "Novembre", "Desembre"];
-        const monthNamesEs = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-        const names = (typeof currentLang !== 'undefined' && currentLang === 'ca') ? monthNames : monthNamesEs;
+        const names = t('months');
         
         const monthTitle = document.getElementById('home-month-title');
         if (monthTitle) monthTitle.textContent = `${t('titleMonthlySituation')} ${names[currMonth]} ${currYear}`;
@@ -1380,7 +1388,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         return {
                             date: parsedDate,
-                            user: user,
+                            user: normalizeName(user),
                             client: client,
                             project: project,
                             task: task,
@@ -1443,7 +1451,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const consumesTime = getV(['Consumeix temps', 'Consume tiempo']) || '';
 
                         return {
-                            user, approver, type, status, dateStart, dateEnd, days, hours, consumesTime
+                            user: normalizeName(user), approver, type, status, dateStart, dateEnd, days, hours, consumesTime
                         };
                     });
                     resolve(result);
@@ -1470,7 +1478,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 : `<span class="badge badge-no">${t('badgeNo')}</span>`;
 
             const absenceWarning = hasAbsence 
-                ? `<i class="ph ph-warning-circle" style="color: var(--danger-color); margin-left: 5px;" title="Aquest tècnic té una absència registrada aquest dia"></i>`
+                ? `<i class="ph ph-warning-circle" style="color: var(--danger-color); margin-left: 5px;" title="${t('lblOvertimeWarning')}"></i>`
                 : '';
 
             tr.innerHTML = `
@@ -1497,6 +1505,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).format(value);
     }
 
+    function normalizeName(name) {
+        if (!name) return '';
+        return name.toString()
+            .toUpperCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "") // Treu accents
+            .replace(/[^A-Z0-9\s]/g, "")    // Treu símbols no estàndards
+            .trim();
+    }
+
     // Al carregar l'app, mirem si hi ha dades a la memòria cau per no tornar a demanar
     try {
         const loadingOverlay = document.getElementById('loading-overlay');
@@ -1506,14 +1524,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const savedAbsData = await getFromDB('absencies_data');
         
         if (savedAbsData && savedAbsData.length > 0) {
-            absData = savedAbsData;
+            absData = savedAbsData.map(r => ({ ...r, user: normalizeName(r.user) }));
             applyAbsFilters();
             document.getElementById('upload-absencies').classList.add('hidden');
             absResultsSection.classList.remove('hidden');
         }
 
         if (savedData && savedData.length > 0) {
-            currentData = savedData;
+            currentData = savedData.map(r => ({ ...r, user: normalizeName(r.user) }));
             const savedFiles = await getFromDB('total_files') || 1;
             if (totalFilesEl) {
                 totalFilesEl.textContent = savedFiles;
