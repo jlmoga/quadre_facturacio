@@ -39,6 +39,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             colAbsDays: "DIES",
             colAbsApprover: "APROVADOR",
             lblAbsStatus: "Estat de Sol·licitud",
+            chartAbsStatusTitle: "Estat de les absències",
+            chartAbsTypeTitle: "Tipus d'absències",
             statFiles: "Total Arxius Processats",
             statRows: "Total Imputacions",
             statAmount: "Import Facturable Estimat",
@@ -127,6 +129,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             colAbsDays: "DÍAS",
             colAbsApprover: "APROBADOR",
             lblAbsStatus: "Estado de Solicitud",
+            chartAbsStatusTitle: "Estado de las ausencias",
+            chartAbsTypeTitle: "Tipo de ausencias",
             statFiles: "Total Archivos Procesados",
             statRows: "Total Imputaciones",
             statAmount: "Importe Facturable Estimado",
@@ -692,6 +696,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         el.addEventListener('change', applyAbsFilters);
     });
 
+    // Toggle Filtres
+    const setupToggle = (btnId, sectionId, storageKey) => {
+        const btn = document.getElementById(btnId);
+        const section = document.getElementById(sectionId);
+        if (btn && section) {
+            // Recuperar estat guardat
+            const isMinimized = localStorage.getItem(storageKey) === 'true';
+            if (isMinimized) section.classList.add('minimized');
+
+            btn.addEventListener('click', () => {
+                const minimized = section.classList.toggle('minimized');
+                localStorage.setItem(storageKey, minimized);
+            });
+        }
+    };
+
+    setupToggle('btn-toggle-filters', 'filters-section', 'filters_imputacions_minimized');
+    setupToggle('btn-toggle-abs-filters', 'filters-absencies', 'filters_absencies_minimized');
+
     if (btnClearAbsFilters) {
         btnClearAbsFilters.addEventListener('click', () => {
             Array.from(filterAbsUsers.options).forEach(opt => opt.selected = false);
@@ -741,7 +764,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const ctxStatus = document.getElementById('absStatusChart').getContext('2d');
         if (absStatusChart) absStatusChart.destroy();
 
-        absStatusChart = createAbsBarChart(ctxStatus, labelsStatus, valuesStatus, total, 'Estat de Sol·licitud');
+        absStatusChart = createAbsBarChart(ctxStatus, labelsStatus, valuesStatus, total, t('chartAbsStatusTitle'));
 
         // --- Gràfic Tipus ---
         const countsType = {};
@@ -753,7 +776,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (ctxTypeCanvas) {
             const ctxType = ctxTypeCanvas.getContext('2d');
             if (absTypeChart) absTypeChart.destroy();
-            absTypeChart = createAbsBarChart(ctxType, labelsType, valuesType, total, 'Tipus d\'Absència');
+            absTypeChart = createAbsBarChart(ctxType, labelsType, valuesType, total, t('chartAbsTypeTitle'));
         }
     }
 
@@ -1040,6 +1063,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 },
                 plugins: {
                     legend: { display: false },
+                    title: {
+                        display: true,
+                        text: title,
+                        color: document.body.classList.contains('theme-light') ? '#202020' : '#F8F8F8',
+                        font: { size: 15, weight: '600' },
+                        padding: { bottom: 10 }
+                    },
                     tooltip: {
                         callbacks: {
                             label: (context) => {

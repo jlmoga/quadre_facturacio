@@ -527,7 +527,7 @@ tbody tr:hover {
     }
 
     /* Gràfics i Dashboards: forçar llista vertical */
-    .charts-wrapper, .abs-dashboard-grid, .abs-sidebar-col, .charts-vertical-stack {
+    .charts-wrapper, .abs-dashboard-grid, .abs-charts-row, .charts-vertical-stack {
         display: block !important;
         width: 100% !important;
         margin: 0 !important;
@@ -646,6 +646,29 @@ tbody tr:hover {
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: margin 0.3s ease, padding 0.3s ease;
+}
+
+.filters-section.minimized .filters-header {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.filters-section.minimized .filters-container {
+    display: none;
+}
+
+.filters-section.minimized {
+    padding-bottom: 0.8rem;
+}
+
+.toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+.filters-section.minimized .toggle-icon {
+    transform: rotate(180deg);
 }
 
 .filters-header h2 {
@@ -866,30 +889,29 @@ tbody tr:hover {
 /* Dashboard Layout for Absences */
 .abs-dashboard-grid {
     display: flex;
+    flex-direction: column;
     gap: 1.5rem;
-    align-items: flex-start;
+}
+
+.abs-charts-row {
+    display: flex;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.abs-charts-row .chart-box {
+    flex: 1;
+    height: 250px;
 }
 
 .abs-main-col {
-    flex: 0 0 75%;
-    min-width: 0; /* Prevents flex items from overflowing */
-}
-
-.abs-sidebar-col {
-    flex: 0 0 calc(25% - 1.5rem);
+    width: 100%;
     min-width: 0;
-}
-
-.charts-vertical-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
 }
 
 .abs-dashboard-grid .table-container,
 #absencies-results-section .table-container {
     flex: none;
-    overflow: visible;
     max-height: none;
 }
 
