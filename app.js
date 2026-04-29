@@ -95,7 +95,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             lblAbsencies: "absències",
             lblOvertimeWarning: "Aquest tècnic té una absència registrada aquest dia",
             optCatalan: "Català",
-            optSpanish: "Castellà"
+            optSpanish: "Castellà",
+            optAll: "(Veure tots/totes)"
         },
         es: {
             appTitle: "Cuadro de Imputaciones",
@@ -191,7 +192,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             lblAbsencies: "ausencias",
             lblOvertimeWarning: "Este técnico tiene una ausencia registrada este día",
             optCatalan: "Catalán",
-            optSpanish: "Castellano"
+            optSpanish: "Castellano",
+            optAll: "(Ver todos/todas)"
         }
 
     };
@@ -619,10 +621,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function parseDateToTime(dStr) {
         if(!dStr) return 0;
+        // Si ja és un objecte Date, normalitzem a mitjanit local
+        if (dStr instanceof Date) return new Date(dStr.getFullYear(), dStr.getMonth(), dStr.getDate()).getTime();
+        
+        // Format DD/MM/YYYY
         const parts = dStr.split('/');
         if(parts.length === 3) return new Date(parts[2], parts[1]-1, parts[0]).getTime();
+        
+        // Format YYYY-MM-DD (comú en inputs type="date")
+        const ymd = dStr.split('-');
+        if(ymd.length === 3) {
+            // Assegurar-nos que són números per evitar problemes amb el constructor
+            return new Date(parseInt(ymd[0]), parseInt(ymd[1])-1, parseInt(ymd[2])).getTime();
+        }
+
         const d = new Date(dStr);
-        return isNaN(d) ? 0 : d.getTime();
+        // Per a qualsevol altre format, intentem normalitzar a mitjanit local
+        return isNaN(d) ? 0 : new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
     }
     function parseDateToDateObj(dStr) {
         if(!dStr) return null;
@@ -759,10 +774,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function applyAbsFilters() {
-        const selectedUsers = Array.from(filterAbsUsers.selectedOptions).map(o => o.value);
-        const selectedStatus = Array.from(filterAbsStatus.selectedOptions).map(o => o.value);
-        const startDate = filterAbsDateStart.value ? new Date(filterAbsDateStart.value).getTime() : null;
-        const endDate = filterAbsDateEnd.value ? new Date(filterAbsDateEnd.value).getTime() : null;
+        const selectedUsersRaw = Array.from(filterAbsUsers.selectedOptions).map(o => o.value);
+        const selectedUsers = selectedUsersRaw.includes('ALL') ? [] : selectedUsersRaw;
+        const selectedStatusRaw = Array.from(filterAbsStatus.selectedOptions).map(o => o.value);
+        const selectedStatus = selectedStatusRaw.includes('ALL') ? [] : selectedStatusRaw;
+        const startDate = filterAbsDateStart.value ? parseDateToTime(filterAbsDateStart.value) : null;
+        const endDate = filterAbsDateEnd.value ? parseDateToTime(filterAbsDateEnd.value) : null;
 
         filteredAbsData = absData.filter(row => {
             if (selectedUsers.length > 0 && !selectedUsers.includes(row.user)) return false;
@@ -782,6 +799,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const currentSelected = Array.from(selectEl.selectedOptions).map(o => o.value);
             const vals = [...new Set(allData.map(r => r[field]).filter(Boolean))].sort();
             selectEl.innerHTML = '';
+            
+            // Opció "Tots"
+            const optAll = document.createElement('option');
+            optAll.value = 'ALL';
+            optAll.textContent = t('optAll');
+            if (currentSelected.includes('ALL')) optAll.selected = true;
+            selectEl.appendChild(optAll);
+
             vals.forEach(v => {
                 const opt = document.createElement('option');
                 opt.value = v;
@@ -1246,13 +1271,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        const startDateTimestamp = pStart.getTime();
-        pEnd.setHours(23, 59, 59, 999);
-        const endDateTimestamp = pEnd.getTime();
+        const startDateTimestamp = pStart ? parseDateToTime(filterDateStart.value) : 0;
+        const endDateTimestamp = pEnd ? parseDateToTime(filterDateEnd.value) + (24 * 60 * 60 * 1000 - 1) : Infinity;
 
-        const selectedClients = Array.from(filterClients.selectedOptions).map(o => o.value);
-        const selectedProjects = Array.from(filterProjects.selectedOptions).map(o => o.value);
-        const selectedUsers = Array.from(filterUsers.selectedOptions).map(o => o.value);
+        const selectedClientsRaw = Array.from(filterClients.selectedOptions).map(o => o.value);
+        const selectedClients = selectedClientsRaw.includes('ALL') ? [] : selectedClientsRaw;
+        const selectedProjectsRaw = Array.from(filterProjects.selectedOptions).map(o => o.value);
+        const selectedProjects = selectedProjectsRaw.includes('ALL') ? [] : selectedProjectsRaw;
+        const selectedUsersRaw = Array.from(filterUsers.selectedOptions).map(o => o.value);
+        const selectedUsers = selectedUsersRaw.includes('ALL') ? [] : selectedUsersRaw;
 
         const rowMatchesDate = (row) => {
             const rowTime = parseDateToTime(row.date);
@@ -1288,6 +1315,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const updateSelect = (selectEl, validValues, selectedValues) => {
             selectEl.innerHTML = '';
+            
+            // Opció "Tots"
+            const optAll = document.createElement('option');
+            optAll.value = 'ALL';
+            optAll.textContent = t('optAll');
+            if (selectedValues.includes('ALL')) optAll.selected = true;
+            selectEl.appendChild(optAll);
+
             validValues.forEach(val => {
                 const opt = document.createElement('option');
                 opt.value = val;

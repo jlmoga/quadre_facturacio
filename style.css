@@ -10,6 +10,8 @@
     --danger-color: #84346b;                          
     --glass-shadow: 0 4px 15px rgba(52, 107, 132, 0.1); 
     --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    --input-bg: rgba(0, 0, 0, 0.2);
+    --option-bg: #1a1d24;
 }
 
 body.theme-light {
@@ -22,6 +24,8 @@ body.theme-light {
     --accent-hover: #005a9e;
     --success-color: #107c10;
     --danger-color: #d13438;
+    --input-bg: #ffffff;
+    --option-bg: #ffffff;
 }
 
 body.theme-light h1.moga-title {
@@ -42,6 +46,8 @@ body.theme-dark {
     --accent-hover: #0086f0;
     --success-color: #60cd18;
     --danger-color: #ea868f;
+    --input-bg: #2d2d2d;
+    --option-bg: #2d2d2d;
 }
 
 * {
@@ -562,8 +568,8 @@ tbody tr:hover {
 
 .filter-group input, 
 .filter-group select {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
     color: var(--text-primary);
     border-radius: 8px;
     padding: 0.75rem;
@@ -583,7 +589,7 @@ tbody tr:hover {
 }
 
 .filter-group select option {
-    background: #1a1d24; /* Fallback for some browsers */
+    background: var(--option-bg);
     color: var(--text-primary);
     padding: 0.5rem;
     border-radius: 4px;
@@ -696,7 +702,7 @@ tbody tr:hover {
 }
 
 .setting-group select {
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--input-bg);
     border: 1px solid var(--accent-color);
     color: var(--text-primary);
     padding: 0.75rem 1rem;
@@ -712,7 +718,7 @@ tbody tr:hover {
 }
 
 .setting-group select option {
-    background: #1a1d24;
+    background: var(--option-bg);
     color: var(--text-primary);
 }
 
@@ -841,7 +847,7 @@ tbody tr:hover {
 
 .table-container.compact {
     max-height: 300px;
-    background: rgba(45, 45, 45, 0.3);
+    background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 12px;
 }
@@ -914,11 +920,11 @@ tbody tr:hover {
     gap: 2rem;
     margin-bottom: 2rem;
     padding: 0.8rem 1.2rem;
-    background: rgba(45, 52, 54, 0.4);
+    background: var(--card-bg);
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-secondary);
 }
 
 .dashboard-info .info-item {
